@@ -5,9 +5,9 @@ plugins {
 
 project.ext {
 
+    version '1.0-SNAPSHOT'
     main_class = 'io.tenmax.poc.dataproc.SparkDriverProgram'
-    jar_name = "java-spark-gcp-dataproc-all.jar"
-
+    jar_name = "java-spark-gcp-dataproc-" + version + "-all.jar"
     local_jar_path = "build/libs/" + jar_name
 
 
@@ -18,7 +18,7 @@ apply from: 'gradle/gcp-util.gradle'
 
 
 sourceCompatibility = 1.8
-version '1.0-SNAPSHOT'
+
 group 'io.tenmax.poc.dataproc'
 
 repositories {
