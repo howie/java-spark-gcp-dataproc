@@ -1,12 +1,12 @@
 // Reference: https://cloud.google.com/dataproc/docs/tutorials/spark-scala
 
 
-def gs_bucket_name = "gs://<bucket-name>/"
-def cluster_name = "<cluster-name>"
+def gs_bucket_name = "<bucket name>"
+def cluster_name = "<cluster name>"
 def remote_jar_path = gs_bucket_name + jar_name
-def input_file = gs_bucket_name + "<URI of input file >"
+def input_file = gs_bucket_name + "<input file name>"
 
-task deploy(type: Exec, dependsOn: shadowJar) {
+task deployJar(type: Exec, dependsOn: shadowJar) {
 
     group = "dataproc"
     description = "Deploy SparkDriverProgram to gcp"
@@ -15,17 +15,39 @@ task deploy(type: Exec, dependsOn: shadowJar) {
 }
 
 
-
 task submitJob(type: Exec) {
 
     group = "dataproc"
     description = "Submit Job to dataproc"
 
+    // gcloud dataproc jobs submit spark --cluster <cluster-name> \
+    // --jar <remote_jar_path> \
+    // --class <main_class>
+    // -- <URI of input file>
+
     commandLine 'gcloud',
             'dataproc', 'jobs', 'submit', 'spark', '--cluster', cluster_name,
             '--jar', remote_jar_path,
             '--class', main_class,
+            '--',
             input_file
+}
 
 
+
+task shutdownCluster(type: Exec) {
+
+    group = "dataproc"
+    description = "shutdown Cluster"
+
+    //gcloud dataproc clusters delete <cluster-name>
+    commandLine 'gcloud', 'dataproc', 'clusters', 'delete', cluster_name
+}
+
+task deleteJar(type: Exec) {
+
+    group = "dataproc"
+    description = "Delete jar file "
+    // gsutil rm gs://<bucket-name>/HelloWorld.jar
+    commandLine 'gsutil', 'rm', remote_jar_path
 }
