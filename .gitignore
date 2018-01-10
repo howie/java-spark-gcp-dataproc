@@ -1,7 +1,9 @@
 
 out/*
 build/*
+metastore_db/*
 
 .gradle/**
 .idea/
 
+*.log

@@ -11,6 +11,6 @@ public class SparkDriverProgramTest {
     @Test
     public void test_local_mode() {
 
-        SparkDriverProgram.main(new String[] {"local", "/tmp/test.log"});
+        SparkDriverProgram.main(new String[] {"/tmp/test.log"});
     }
 }

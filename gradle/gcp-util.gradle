@@ -1,0 +1,31 @@
+// Reference: https://cloud.google.com/dataproc/docs/tutorials/spark-scala
+
+
+def gs_bucket_name = "gs://<bucket-name>/"
+def cluster_name = "<cluster-name>"
+def remote_jar_path = gs_bucket_name + jar_name
+def input_file = gs_bucket_name + "<URI of input file >"
+
+task deploy(type: Exec, dependsOn: shadowJar) {
+
+    group = "dataproc"
+    description = "Deploy SparkDriverProgram to gcp"
+
+    commandLine 'gsutil', 'cp', local_jar_path, gs_bucket_name
+}
+
+
+
+task submitJob(type: Exec) {
+
+    group = "dataproc"
+    description = "Submit Job to dataproc"
+
+    commandLine 'gcloud',
+            'dataproc', 'jobs', 'submit', 'spark', '--cluster', cluster_name,
+            '--jar', remote_jar_path,
+            '--class', main_class,
+            input_file
+
+
+}

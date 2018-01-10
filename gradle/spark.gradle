@@ -1,0 +1,51 @@
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'distribution'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+
+shadowJar {
+    relocate 'com.google', 'shadow.com.google'
+    relocate 'org.apache.commons.cli', 'shadow.org.apache.commons.cli'
+    manifest {
+        attributes 'Main-Class': main_class
+    }
+    zip64 true
+}
+
+distZip {
+    archiveName = "${project.name}.zip"
+    zip64 true
+}
+
+distributions {
+    main {
+        contents {
+            from('src/main/scripts') {
+                into 'bin'
+            }
+
+            from(shadowJar.archivePath) {
+                into 'libs'
+            }
+        }
+    }
+}
+
+
+
+task runLocal(type: Exec) {
+
+    group = "run"
+    description = "test run spark on local"
+
+    commandLine 'spark-submit',
+            '--class', main_class,
+            '--deploy-mode', 'client',
+            '--master', 'local[*]',
+            'build/libs/java-spark-gcp-dataproc-all.jar',
+            '/tmp/test'
+
+}
+
+[installDist, distZip, distTar, runLocal]*.dependsOn(shadowJar)

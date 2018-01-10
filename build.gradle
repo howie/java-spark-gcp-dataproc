@@ -3,18 +3,23 @@ plugins {
 }
 
 
-group 'io.tenmax.poc.dataproc'
-version '1.0-SNAPSHOT'
+project.ext {
 
-apply plugin: 'java'
-apply plugin: 'java-library'
-apply plugin: 'distribution'
-apply plugin: 'com.github.johnrengelman.shadow'
+    main_class = 'io.tenmax.poc.dataproc.SparkDriverProgram'
+    jar_name = "java-spark-gcp-dataproc-all.jar"
+
+    local_jar_path = "build/libs/" + jar_name
+
+
+}
+
+apply from: 'gradle/spark.gradle'
+apply from: 'gradle/gcp-util.gradle'
 
 
 sourceCompatibility = 1.8
-
-
+version '1.0-SNAPSHOT'
+group 'io.tenmax.poc.dataproc'
 
 repositories {
     jcenter()
@@ -30,7 +35,7 @@ dependencies {
     compile 'com.typesafe:config:1.3.1'
 
     // Apache Spark
-    compileOnly('org.apache.spark:spark-sql_2.11:2.1.0') {
+    compileOnly('org.apache.spark:spark-sql_2.11:2.1.1') {
         exclude module: 'commons-cli'
         exclude module: 'guava'
     }
@@ -38,46 +43,11 @@ dependencies {
     compileOnly 'org.scala-lang:scala-xml:2.11.0-M4'
 
 
-    testImplementation 'org.apache.spark:spark-core_2.11:2.1.0', 'junit:junit:4.12'
+    testCompile 'org.apache.spark:spark-sql_2.11:2.1.0'
 
     // Without this, you will get SLF4J-related error with more recent versions of Spark
     testCompile group: 'junit', name: 'junit', version: '4.+'
     testCompile group: 'org.assertj', name: 'assertj-core-java8', version: '1.0.0m1'
 }
 
-// Resolve the guava dependency issue for spark and cassandra
-// https://issues.apache.org/jira/browse/SPARK-16725
-//
-// Solution:
-// Relocating guava packages.
-//http://imperceptiblethoughts.com/shadow/#relocating_packages
-shadowJar {
-    version = ''
-    relocate 'com.google', 'shadow.com.google'
-    relocate 'org.apache.commons.cli', 'shadow.org.apache.commons.cli'
-    manifest {
-        attributes 'Main-Class': 'io.tenmax.poc.dataproc.SparkDriverProgram'
-    }
-    zip64 true
-}
 
-distZip {
-    archiveName = "${project.name}.zip"
-    zip64 true
-}
-
-distributions {
-    main {
-        contents {
-            from('src/main/scripts') {
-                into 'bin'
-            }
-
-            from(shadowJar.archivePath) {
-                into 'libs'
-            }
-        }
-    }
-}
-
-[installDist, distZip, distTar]*.dependsOn(shadowJar)
